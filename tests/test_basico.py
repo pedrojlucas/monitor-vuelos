@@ -113,7 +113,7 @@ class Pruebas(unittest.TestCase):
     def test_informe(self):
         from vuelos.informe import generar
         core.recoger(ClienteFalso(), self.cfg, self.con, aviso=lambda *_: None)
-        ruta = generar(self.con, self.cfg, str(Path(self.tmp.name) / "i.html"))
+        ruta = generar(self.con, self.cfg, str(Path(self.tmp.name) / "docs" / "i.html"))  # carpeta aún inexistente
         html = ruta.read_text(encoding="utf-8")
         self.assertIn("MAD-IAH", html)
         self.assertNotIn("__DATOS__", html)

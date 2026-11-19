@@ -67,5 +67,6 @@ def generar(con, cfg, salida: str = "informe.html") -> Path:
             .replace("__DESDE__", str(rango[0] or "–")).replace("__HASTA__", str(rango[1] or "–"))
             .replace("__MONEDA__", cfg.moneda.upper()))
     ruta = Path(salida).resolve()
+    ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_text(html, encoding="utf-8")
     return ruta
