@@ -1,0 +1,9 @@
+# Secreto: nunca al repositorio (en GitHub va como secret TRAVELPAYOUTS_TOKEN)
+token.txt
+
+# Caché local: se reconstruye desde datos/
+precios.db
+informe.html
+recogida.log
+alertas.md
+__pycache__/

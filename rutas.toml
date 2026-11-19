@@ -1,0 +1,27 @@
+# Configuración del rastreador de vuelos
+# Códigos IATA: se aceptan códigos de aeropuerto (IAH) o de ciudad (LON = todos los de Londres).
+
+moneda = "eur"
+meses_adelante = 6        # cuántos meses de salidas futuras se recogen cada día
+solo_ida = true           # true = precios de ida; false = ida y vuelta
+base_datos = "precios.db"       # caché local, se reconstruye desde carpeta_datos
+carpeta_datos = "datos"         # un CSV comprimido por día: es el histórico que se guarda en git
+
+origenes = ["MAD", "ALC", "RMU"]
+
+destinos = [
+  # Europa
+  "LON", "PAR", "ROM", "MIL", "BER", "MUC", "AMS", "BRU", "LIS", "DUB",
+  "VIE", "PRG", "ZRH", "CPH", "ATH", "BUD", "WAW", "STO", "OSL", "HEL",
+  # Estados Unidos
+  "IAH",  # Houston Intercontinental
+  "PDX",  # Portland (Oregón)
+]
+
+# Alertas: avisa cuando el mínimo encontrado baja de este precio (en la moneda indicada).
+# Clave "ORIGEN-DESTINO". "*-DESTINO" aplica a cualquier origen.
+[alertas]
+"*-IAH" = 450
+"*-PDX" = 550
+"*-LON" = 40
+"*-PAR" = 40
