@@ -1,69 +1,86 @@
 # Rastreador de precios de vuelos
 
-Busca vuelos desde MAD, ALC y RMU hacia Europa, Houston (IAH) y Portland (PDX). Además, guarda
-cada día los precios en una base de datos local (`precios.db`) para ir creando tu propio histórico.
+Busca vuelos desde MAD, ALC y RMU hacia Europa, y desde MAD y ALC hacia Houston (IAH) y Portland
+(PDX). Guarda los precios para ir creando tu propio histórico. Usa dos fuentes:
 
-- **Fuente:** Aviasales Data API (Travelpayouts), gratuita. Son precios que otros usuarios han
-  encontrado en los últimos días (caché), así que sirven para tendencias e histórico, pero no son
-  cotizaciones al minuto. Antes de comprar, confirma el precio en Google Flights o en la web de la aerolínea.
-- **Histórico:** ninguna fuente gratuita da años de precios hacia atrás. Este proyecto los acumula
-  a partir del día en que empiezas a recogerlos.
+| Rutas | Fuente | Frecuencia | Coste |
+|---|---|---|---|
+| Europa (desde MAD, ALC, RMU) | Aviasales Data API (Travelpayouts): caché de precios que otros usuarios han encontrado hace poco | diaria | gratis |
+| Transatlánticas (MAD/ALC → IAH, PDX) | Google Flights vía SerpApi: precio real | cada 3 días (configurable) | 1 búsqueda del plan por consulta |
+
+- La caché de Travelpayouts no tiene datos transatlánticos desde Madrid ni desde Alicante (lo
+  comprobó el workflow de diagnóstico), por eso esas rutas van por Google Flights.
+- Cada búsqueda en Google trae, además, el **historial de unos 60 días** de esa misma búsqueda,
+  así que el histórico transatlántico no empieza de cero.
+- Ninguna fuente gratuita da años de precios hacia atrás: el resto se acumula día a día.
+- Antes de comprar, confirma el precio en la web de la aerolínea.
 
 ## Puesta en marcha (una sola vez)
 
-1. **Token:** regístrate en <https://www.travelpayouts.com> (es gratis) y copia tu token de API
-   desde *Herramientas → API*. Guárdalo en un fichero `token.txt` en esta carpeta.
-2. **Rutas y alertas:** edita `rutas.toml` (orígenes, destinos, meses que se miran hacia delante
-   y precios umbral de las alertas).
-3. **Prueba:** `python -m vuelos buscar MAD IAH 2027-03`
+1. **Travelpayouts:** regístrate en <https://www.travelpayouts.com> (es gratis) y copia tu token
+   desde *Herramientas → API*.
+2. **SerpApi:** regístrate en <https://serpapi.com> y copia tu clave desde
+   <https://serpapi.com/manage-api-key>.
+3. **En local** (opcional): guarda el token en `token.txt` y la clave en `serpapi_key.txt`. Los dos
+   ficheros están en `.gitignore`, así que nunca se suben al repositorio.
+4. **Rutas y alertas:** edita `rutas.toml`.
 
 ## Uso
 
 ```
-python -m vuelos buscar MAD LON 2027-02 --max-escalas 0 --precio-max 60
-python -m vuelos buscar ALC PDX 2027-05-10 --regreso 2027-05-24
-python -m vuelos recoger                 # recogida completa (unas 400 consultas, 2–3 min)
-python -m vuelos historico MAD IAH --mes 2027-06
-python -m vuelos ofertas --origen RMU
+python -m vuelos buscar MAD LON 2027-02 --max-escalas 0 --precio-max 60    # Europa (gratis)
+python -m vuelos google MAD IAH 2027-03-10 --regreso 2027-03-24             # Google (1 búsqueda)
+python -m vuelos cuota                   # búsquedas de SerpApi usadas y restantes (no gasta)
+python -m vuelos recoger                 # recogida completa (Europa + Google si toca)
+python -m vuelos recoger --solo-google --forzar-google
+python -m vuelos historico MAD IAH
+python -m vuelos ofertas --destino PDX
 python -m vuelos alertas
 python -m vuelos informe                 # crea informe.html con las gráficas
 ```
 
-Cada `buscar` también se guarda en el histórico.
+## Consumo de SerpApi
 
-## Recogida diaria en GitHub Actions (sin tener el PC encendido)
+Por defecto (sección `[google]` de `rutas.toml`):
+
+- **Madrid:** 3 fechas de salida (a 45, 90 y 150 días vista).
+- **Alicante:** 1 fecha (a 45 días).
+- **Estancia:** ida y vuelta de 14 días.
+
+Son 4 fechas × 2 destinos = **8 búsquedas por consulta**. Con una consulta cada 3 días salen
+**unas 80 búsquedas al mes**.
+
+- Antes de cada consulta se mira la cuota que queda, y nunca se gastan las últimas 10 búsquedas
+  (`reserva_busquedas`).
+- Si no hay cuota para todo, se recorta empezando por lo último de la lista (Alicante), así que
+  Madrid tiene prioridad.
+- Para vigilar las fechas de un viaje concreto, añádelas en `fechas_salida`.
+
+## Recogida en GitHub Actions (sin tener el PC encendido)
 
 El workflow `.github/workflows/recoger.yml` se ejecuta cada día a las 05:17 UTC. En cada ejecución:
 
-1. recoge los precios de todas las rutas;
-2. guarda el día en `datos/AAAA/AAAA-MM-DD.csv.gz` y hace un commit en el repositorio. Ese es el
-   histórico permanente: unos 20–30 MB al año;
-3. regenera el informe en `docs/index.html`;
-4. si alguna ruta baja de su umbral (o baja más que el día anterior), **abre una issue**, y GitHub
-   te avisa por correo.
+1. recoge los precios de Europa y, si toca, consulta las rutas de Google;
+2. guarda cada día en `datos/AAAA/AAAA-MM-DD.csv.gz` y hace un commit (es el histórico permanente);
+3. regenera el informe en `docs/index.html` (publicado con GitHub Pages si lo activas);
+4. si alguna ruta baja de su umbral, o Google marca un precio como **bajo**, **abre una issue**,
+   y GitHub te avisa por correo.
 
-Configuración (una sola vez):
+Secrets necesarios (**Settings → Secrets and variables → Actions**):
 
-1. Crea un repositorio en GitHub y sube esta carpeta (`git push`).
-2. En el repositorio, ve a **Settings → Secrets and variables → Actions → New repository secret**.
-   Crea uno con nombre `TRAVELPAYOUTS_TOKEN` y pega tu token como valor.
-3. En **Actions**, abre "Recoger precios de vuelos" y pulsa **Run workflow** para probarlo.
-4. Opcional: si el repositorio es público, ve a **Settings → Pages**, elige la rama `main` y la
-   carpeta `/docs`. Así el informe queda publicado en `https://TU_USUARIO.github.io/REPO/`.
-   Si es privado, Pages requiere un plan de pago; en ese caso ábrelo en local tras un `git pull`.
+- `TRAVELPAYOUTS_TOKEN`
+- `SERPAPI_KEY`. Sin esta clave, la parte de Google se omite y Europa sigue funcionando.
 
-Coste: en un repositorio público es gratis. En uno privado, cada ejecución gasta unos 3–5 minutos
-de los 2.000 minutos gratuitos al mes. Si una ejecución falla (por ejemplo, porque el token
-caduca), GitHub te avisa por correo.
+El workflow manual **"Diagnóstico de cobertura de la API"** prueba qué rutas tienen datos en
+Travelpayouts.
 
-En local, cada orden importa automáticamente los CSV nuevos de `datos/` a `precios.db`, así que
-basta con hacer `git pull` para tener el histórico al día en tu PC y en el MCP.
+En local, cada orden importa automáticamente los CSV nuevos o modificados de `datos/`, así que
+basta con hacer `git pull` para tener el histórico al día.
 
 ### Alternativa local
 
 `recoger.bat` hace lo mismo con el Programador de tareas de Windows, pero el PC tiene que estar
-encendido:
-`schtasks /Create /SC DAILY /ST 08:00 /TN "Vuelos - recoger precios" /TR "\"RUTA\recoger.bat\""`
+encendido.
 
 ## Uso desde Claude (MCP)
 
@@ -72,9 +89,16 @@ pip install mcp
 claude mcp add vuelos -- python "RUTA\vuelos\mcp_server.py"
 ```
 
-Herramientas que expone: `buscar_vuelos`, `historico_ruta`, `mejores_ofertas`, `alertas_precio`
-y `rutas_configuradas`.
+Herramientas que expone:
+
+- `buscar_vuelos`
+- `buscar_google_flights`
+- `cuota_serpapi`
+- `historico_ruta`
+- `mejores_ofertas`
+- `alertas_precio`
+- `rutas_configuradas`
 
 ## Pruebas
 
-`python -m unittest discover -s tests -t .` (no usan la red: un cliente falso imita la API).
+`python -m unittest discover -s tests -t .` (no usan la red: clientes falsos imitan las dos APIs).

@@ -1,5 +1,7 @@
 # Secreto: nunca al repositorio (en GitHub va como secret TRAVELPAYOUTS_TOKEN)
 token.txt
+serpapi_key.txt
+google_bajos.md
 
 # Caché local: se reconstruye desde datos/
 precios.db

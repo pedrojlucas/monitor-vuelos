@@ -7,21 +7,33 @@ solo_ida = true           # true = precios de ida; false = ida y vuelta
 base_datos = "precios.db"       # caché local, se reconstruye desde carpeta_datos
 carpeta_datos = "datos"         # un CSV comprimido por día: es el histórico que se guarda en git
 
+# --- Europa: caché gratuita de Aviasales (Travelpayouts), todos los días ---
 origenes = ["MAD", "ALC", "RMU"]
 
 destinos = [
-  # Europa
   "LON", "PAR", "ROM", "MIL", "BER", "MUC", "AMS", "BRU", "LIS", "DUB",
   "VIE", "PRG", "ZRH", "CPH", "ATH", "BUD", "WAW", "STO", "OSL", "HEL",
-  # Estados Unidos
-  "IAH",  # Houston Intercontinental
-  "PDX",  # Portland (Oregón)
 ]
+
+# --- Transatlánticos: Google Flights vía SerpApi (cada búsqueda gasta 1 crédito) ---
+[google]
+destinos = ["IAH", "PDX"]          # Houston Intercontinental, Portland (Oregón)
+# Origen = nº de fechas de 'dias_antelacion' que se consultan. El orden marca la prioridad
+# si falta cuota (se recorta primero lo último).
+fechas_por_origen = { MAD = 3, ALC = 1 }
+dias_antelacion = [45, 90, 150]    # salidas a 45, 90 y 150 días vista
+fechas_salida = []                 # fechas fijas a vigilar además, p.ej. ["2027-07-10"]
+dias_estancia = 14                 # vuelta 14 días después; 0 = solo ida
+frecuencia_dias = 3                # consultar cada 3 días
+reserva_busquedas = 10             # no gastar las últimas 10 búsquedas del plan
+# max_escalas = 1                  # descomenta para limitar escalas
+# Consumo: (3 + 1) fechas × 2 destinos = 8 búsquedas por consulta ≈ 80 al mes
 
 # Alertas: avisa cuando el mínimo encontrado baja de este precio (en la moneda indicada).
 # Clave "ORIGEN-DESTINO". "*-DESTINO" aplica a cualquier origen.
+# Ojo: los transatlánticos se miden en ida y vuelta (dias_estancia > 0).
 [alertas]
-"*-IAH" = 450
-"*-PDX" = 550
+"*-IAH" = 650
+"*-PDX" = 750
 "*-LON" = 40
 "*-PAR" = 40

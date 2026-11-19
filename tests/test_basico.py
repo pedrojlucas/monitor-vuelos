@@ -88,7 +88,8 @@ class Pruebas(unittest.TestCase):
 
     def test_csv_ida_y_vuelta(self):
         r = core.recoger(ClienteFalso(), self.cfg, self.con, aviso=lambda *_: None)
-        self.assertTrue(r["fichero"].exists())
+        [fichero] = core.exportar(self.con, self.cfg, r["dias"])
+        self.assertTrue(fichero.exists())
         original = self.con.execute("SELECT COUNT(*), SUM(precio) FROM observaciones").fetchone()
         otra = db.conectar(Path(self.tmp.name) / "otra.db")
         self.assertEqual(db.sincronizar(otra, self.cfg.carpeta_datos), 1)

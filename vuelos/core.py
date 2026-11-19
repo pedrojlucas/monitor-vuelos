@@ -1,6 +1,6 @@
 """Lógica común a la línea de comandos y al servidor MCP."""
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 
 from . import db
 from .api import ErrorApi, Vuelo
@@ -62,8 +62,80 @@ def recoger(cliente, cfg: Config, con: sqlite3.Connection, aviso=print) -> dict:
                     continue
                 resumen["filas"] += db.guardar(con, hoy, o, d, minimo_por_dia(vuelos), cfg.moneda)
             aviso(f"  {o}-{d} ok")
-    resumen["fichero"] = db.exportar_dia(con, hoy, cfg.carpeta_datos)
+    resumen["dias"] = {hoy}
     return resumen
+
+
+def fechas_google(cfg: Config, origen: str, hoy: date | None = None) -> list[tuple[str, str | None]]:
+    """(salida, regreso) a consultar para un origen: fechas fijas + N fechas a X días vista."""
+    hoy = hoy or date.today()
+    g = cfg.google
+    salidas = [f for f in g.fechas_salida if f > hoy.isoformat()]
+    salidas += [(hoy + timedelta(days=d)).isoformat()
+                for d in g.dias_antelacion[:g.fechas_por_origen.get(origen, 0)]]
+    out = []
+    for s in dict.fromkeys(salidas):
+        regreso = ((date.fromisoformat(s) + timedelta(days=g.dias_estancia)).isoformat()
+                   if g.dias_estancia else None)
+        out.append((s, regreso))
+    return out
+
+
+def recoger_google(cliente, cfg: Config, con: sqlite3.Connection, aviso=print,
+                   forzar: bool = False) -> dict:
+    """Rutas transatlánticas con Google Flights (SerpApi), con control de frecuencia y de cuota."""
+    hoy = date.today()
+    resumen = {"busquedas": 0, "filas": 0, "historial": 0, "errores": [], "omitido": None,
+               "dias": set(), "insights": []}
+    g = cfg.google
+    if not g.destinos or not g.fechas_por_origen:
+        resumen["omitido"] = "no hay rutas [google] en rutas.toml"
+        return resumen
+    ultima = con.execute("SELECT MAX(observado) FROM observaciones WHERE fuente='google'").fetchone()[0]
+    if not forzar and ultima and (hoy - date.fromisoformat(ultima)).days < g.frecuencia_dias:
+        resumen["omitido"] = f"última consulta el {ultima}; se consulta cada {g.frecuencia_dias} días"
+        return resumen
+
+    plan = [(o, d, s, r) for o in g.origenes for d in g.destinos for s, r in fechas_google(cfg, o, hoy)]
+    try:
+        restantes = cliente.busquedas_restantes()
+    except ErrorApi as e:
+        resumen["errores"].append(f"cuenta: {e}")
+        return resumen
+    if restantes is not None:
+        disponibles = max(0, restantes - g.reserva_busquedas)
+        if disponibles < len(plan):   # el orden de fechas_por_origen marca la prioridad
+            aviso(f"  cuota: quedan {restantes} búsquedas; se hacen {disponibles} de {len(plan)}")
+            plan = plan[:disponibles]
+    resumen["restantes_antes"] = restantes
+
+    for o, d, s, r in plan:
+        resumen["busquedas"] += 1
+        try:
+            res = cliente.buscar(o, d, s, r, max_escalas=g.max_escalas)
+        except ErrorApi as e:
+            resumen["errores"].append(f"{o}-{d} {s}: {e}")
+            continue
+        if res.vuelos:
+            resumen["filas"] += db.guardar(con, hoy.isoformat(), o, d, res.vuelos[:1], cfg.moneda, "google")
+            resumen["dias"].add(hoy.isoformat())
+        # el historial de Google rellena hacia atrás el precio de esta misma búsqueda
+        filas_h = [(f, o, d, s, r or "", p, cfg.moneda, None, None, None, res.url, "google-historial")
+                   for f, p in res.historial if f < hoy.isoformat()]
+        resumen["historial"] += db.insertar(con, filas_h)
+        resumen["dias"].update(f for f, *_ in filas_h)
+        mejor = res.vuelos[0] if res.vuelos else None
+        resumen["insights"].append({
+            "ruta": f"{o}-{d}", "salida": s, "regreso": r, "precio": mejor.precio if mejor else None,
+            "aerolinea": mejor.aerolinea if mejor else None, "escalas": mejor.escalas if mejor else None,
+            "nivel": res.nivel, "rango_tipico": res.rango_tipico, "url": res.url})
+        aviso(f"  {o}-{d} {s}{'→' + r if r else ''}: "
+              f"{mejor.precio if mejor else '-'} {cfg.moneda.upper()} ({res.nivel or 'sin nivel'})")
+    return resumen
+
+
+def exportar(con: sqlite3.Connection, cfg: Config, dias) -> list:
+    return [p for p in (db.exportar_dia(con, d, cfg.carpeta_datos) for d in sorted(dias)) if p]
 
 
 def historico(con: sqlite3.Connection, origen: str, destino: str,
@@ -97,7 +169,9 @@ def historico(con: sqlite3.Connection, origen: str, destino: str,
 def ofertas(con: sqlite3.Connection, origen: str | None = None, destino: str | None = None,
             limite: int = 15) -> list[dict]:
     """Mejores precios de la última recogida, con comparación frente a la media histórica."""
-    filtro, args = "o.observado=(SELECT MAX(observado) FROM observaciones)", []
+    filtro = """o.observado=(SELECT MAX(observado) FROM observaciones u
+                WHERE u.origen=o.origen AND u.destino=o.destino AND u.fuente!='google-historial')"""
+    args = []
     if origen:
         filtro += " AND o.origen=?"; args.append(origen.upper())
     if destino:
@@ -128,16 +202,18 @@ def alertas(con: sqlite3.Connection, cfg: Config, nuevas: bool = False) -> list[
 
     nuevas=True: solo las que acaban de bajar del umbral o han bajado aún más respecto a la
     recogida anterior (evita repetir la misma alerta cada día)."""
-    dias = [r[0] for r in con.execute(
-        "SELECT DISTINCT observado FROM observaciones ORDER BY observado DESC LIMIT 2")]
-    hoy = _minimos(con, dias[0] if dias else None)
-    antes = _minimos(con, dias[1] if len(dias) > 1 else None)
+    ultimo = con.execute("SELECT MAX(observado) FROM observaciones").fetchone()[0]
+    hoy = _minimos(con, ultimo)
     out = []
     for clave, f in hoy.items():
         u = cfg.umbral(*clave)
         if u is None or f["precio"] > u:
             continue
-        previo = antes.get(clave, {}).get("precio")
+        # observación anterior de ESTA ruta (las rutas de Google no se consultan cada día)
+        dia_previo = con.execute(
+            "SELECT MAX(observado) FROM observaciones WHERE origen=? AND destino=? AND observado<?",
+            (*clave, ultimo)).fetchone()[0]
+        previo = _minimos(con, dia_previo).get(clave, {}).get("precio")
         if nuevas and previo is not None and previo <= u and f["precio"] >= previo:
             continue
         out.append({**f, "umbral": u, "anterior": previo})

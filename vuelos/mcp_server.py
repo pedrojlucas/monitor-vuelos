@@ -11,7 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 
 from vuelos import config, core, db  # noqa: E402
-from vuelos.api import Travelpayouts  # noqa: E402
+from datetime import date  # noqa: E402
+
+from vuelos.api import SerpApi, Travelpayouts  # noqa: E402
 
 mcp = FastMCP("vuelos", instructions=(
     "Precios de vuelos de la caché de Aviasales (no son cotizaciones en tiempo real) e histórico "
@@ -47,6 +49,33 @@ def buscar_vuelos(origen: str, destino: str, salida: str, regreso: str | None = 
 
 
 @mcp.tool()
+def buscar_google_flights(origen: str, destino: str, salida: str, regreso: str | None = None,
+                          max_escalas: int | None = None, limite: int = 10) -> dict:
+    """Precio real en Google Flights (vía SerpApi; gasta 1 búsqueda del plan). Úsalo para
+    transatlánticos (IAH, PDX...) o para confirmar un precio. salida/regreso: 'YYYY-MM-DD'.
+    Devuelve opciones, nivel de precio según Google (low/typical/high), rango típico e historial."""
+    cfg = _cfg()
+    res = SerpApi(config.clave_serpapi(), cfg.moneda).buscar(
+        origen.upper(), destino.upper(), salida, regreso, max_escalas)
+    if res.vuelos:
+        db.guardar(_con(cfg), date.today().isoformat(), origen.upper(), destino.upper(),
+                   res.vuelos[:1], cfg.moneda, "google")
+    return {
+        "opciones": [{"precio": v.precio, "aerolinea": v.aerolinea, "escalas": v.escalas,
+                      "duracion_min": v.duracion_min, "aeropuertos": f"{v.origen}-{v.destino}"}
+                     for v in res.vuelos[:limite]],
+        "moneda": cfg.moneda, "nivel_google": res.nivel, "rango_tipico": res.rango_tipico,
+        "historial": res.historial, "url": res.url,
+    }
+
+
+@mcp.tool()
+def cuota_serpapi() -> dict:
+    """Búsquedas de SerpApi usadas y restantes este mes (consultarlo no gasta)."""
+    return SerpApi(config.clave_serpapi(), _cfg().moneda).cuenta()
+
+
+@mcp.tool()
 def historico_ruta(origen: str, destino: str, mes_salida: str | None = None) -> dict:
     """Histórico local de una ruta: evolución del mínimo por día de recogida, mínimos por mes de
     salida y mínimo histórico. mes_salida opcional ('YYYY-MM') para ver un mes concreto."""
@@ -71,7 +100,11 @@ def rutas_configuradas() -> dict:
     """Orígenes, destinos y umbrales de alerta definidos en rutas.toml."""
     cfg = _cfg()
     return {"origenes": cfg.origenes, "destinos": cfg.destinos, "alertas": cfg.alertas,
-            "meses_adelante": cfg.meses_adelante, "moneda": cfg.moneda}
+            "meses_adelante": cfg.meses_adelante, "moneda": cfg.moneda,
+            "google": {"origenes": cfg.google.fechas_por_origen, "destinos": cfg.google.destinos,
+                       "dias_antelacion": cfg.google.dias_antelacion,
+                       "dias_estancia": cfg.google.dias_estancia,
+                       "frecuencia_dias": cfg.google.frecuencia_dias}}
 
 
 if __name__ == "__main__":

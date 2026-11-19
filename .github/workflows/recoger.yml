@@ -30,6 +30,7 @@ jobs:
       - name: Recoger precios
         env:
           TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python -m vuelos recoger
 
       - name: Generar informe
@@ -40,6 +41,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python -m vuelos alertas --nuevas --markdown > alertas.md
+          if [ -f google_bajos.md ]; then cat google_bajos.md >> alertas.md; fi
           if [ -s alertas.md ]; then
             gh issue create --title "✈️ Alerta de precio $(date -u +%F)" --body-file alertas.md
           fi
