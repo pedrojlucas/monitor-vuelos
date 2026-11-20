@@ -25,6 +25,21 @@ class ConfigGoogle:
 
 
 @dataclass
+class Viaje:
+    """Viaje concreto con fechas exactas: se consulta cada día en Google Flights hasta que pasa."""
+    nombre: str
+    destino: str
+    origenes: list[str]
+    fechas: list[tuple[str, str | None]]   # (salida, regreso)
+    max_escalas: int | None = None
+    umbral: float | None = None
+
+    @property
+    def clave(self) -> str:
+        return self.nombre
+
+
+@dataclass
 class Config:
     moneda: str = "eur"
     meses_adelante: int = 6
@@ -35,6 +50,7 @@ class Config:
     destinos: list[str] = field(default_factory=list)
     alertas: dict[str, float] = field(default_factory=dict)
     google: ConfigGoogle = field(default_factory=ConfigGoogle)
+    viajes: list[Viaje] = field(default_factory=list)
 
     def umbral(self, origen: str, destino: str) -> float | None:
         return self.alertas.get(f"{origen}-{destino}", self.alertas.get(f"*-{destino}"))
@@ -65,6 +81,13 @@ def cargar(ruta: Path | None = None) -> Config:
             frecuencia_dias=int(g.get("frecuencia_dias", 3)),
             reserva_busquedas=int(g.get("reserva_busquedas", 10)),
         ),
+        viajes=[Viaje(
+            nombre=v["nombre"], destino=v["destino"].upper(),
+            origenes=[o.upper() for o in v.get("origenes", ["MAD"])],
+            fechas=[(str(f[0]), str(f[1]) if len(f) > 1 and f[1] else None) for f in v["fechas"]],
+            max_escalas=v.get("max_escalas"),
+            umbral=float(v["umbral"]) if v.get("umbral") is not None else None,
+        ) for v in datos.get("viajes", [])],
     )
 
 

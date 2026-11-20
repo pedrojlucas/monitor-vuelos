@@ -56,6 +56,23 @@ Son 4 fechas × 2 destinos = **8 búsquedas por consulta**. Con una consulta cad
   Madrid tiene prioridad.
 - Para vigilar las fechas de un viaje concreto, añádelas en `fechas_salida`.
 
+## Viajes vigilados (fechas exactas)
+
+Además del histórico general, en `rutas.toml` puedes definir viajes concretos con `[[viajes]]`:
+destino, orígenes, parejas de fechas (ida, vuelta), máximo de escalas y precio umbral.
+
+- **Cuándo se consultan:** cada día en Google Flights, hasta que pasa la fecha de ida.
+- **Prioridad:** tienen preferencia sobre el histórico general cuando escasea la cuota de SerpApi.
+- **Resumen:** se publica en `docs/viajes.json`, con el precio actual, el de hace 7 días, el mínimo
+  visto, el nivel según Google, el rango típico, las 3 mejores opciones y la evolución.
+  Es lo que lee la rutina semanal:
+  <https://raw.githubusercontent.com/pedrojlucas/monitor-vuelos/main/docs/viajes.json>
+- **Alertas:** se abre una issue si una opción baja del umbral (o baja más), o si Google la pasa a
+  marcar como precio bajo.
+- **En local:** `python -m vuelos viajes` muestra el estado (no gasta búsquedas).
+
+Los precios no incluyen la maleta facturada.
+
 ## Recogida en GitHub Actions (sin tener el PC encendido)
 
 El workflow `.github/workflows/recoger.yml` se ejecuta cada día a las 05:17 UTC. En cada ejecución:

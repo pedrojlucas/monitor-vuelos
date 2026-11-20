@@ -3,7 +3,7 @@ import argparse
 import sys
 from datetime import date
 
-from . import config, core, db
+from . import config, core, db, viajes
 from pathlib import Path
 
 from .api import SerpApi, Travelpayouts
@@ -51,6 +51,7 @@ def main(argv=None):
     go.add_argument("--max-escalas", type=int)
     go.add_argument("-n", "--limite", type=int, default=10)
 
+    sub.add_parser("viajes", help="estado de los viajes vigilados (no gasta)")
     sub.add_parser("cuota", help="búsquedas de SerpApi usadas y restantes (no gasta)")
 
     h = sub.add_parser("historico", help="evolución de precios de una ruta")
@@ -119,7 +120,26 @@ def main(argv=None):
             if r["consultas"] and len(r["errores"]) == r["consultas"]:
                 sys.exit("Todas las consultas fallaron: revisa el token o la conexión.")
         clave = config.clave_serpapi(obligatoria=False)
-        print(f"\nGoogle Flights (SerpApi) · rutas transatlánticas")
+        avisos_md = []
+        ruta_resumen = cfg.carpeta_datos.parent / "docs" / "viajes.json"
+        previo = viajes.leer(ruta_resumen)
+        consultas = {}
+        print(f"\nViajes vigilados (Google Flights, fechas exactas)")
+        if not clave:
+            print("  omitido: no hay SERPAPI_KEY")
+        else:   # primero los viajes: tienen prioridad en la cuota
+            rv = viajes.recoger(SerpApi(clave, cfg.moneda), cfg, con)
+            dias |= rv["dias"]
+            consultas = rv["consultas"]
+            print(f"  omitido: {rv['omitido']}" if rv["omitido"] else
+                  f"{rv['busquedas']} búsquedas, {len(rv['errores'])} errores")
+            for e in rv["errores"]:
+                print("  !", e)
+        if cfg.viajes:
+            nuevo = viajes.resumen(cfg, con, consultas, previo)
+            viajes.escribir(ruta_resumen, nuevo)
+            avisos_md.append(viajes.alertas_markdown(viajes.alertas(nuevo, previo), cfg.moneda))
+        print(f"\nGoogle Flights (SerpApi) · histórico transatlántico general")
         if not clave:
             print("  omitido: no hay SERPAPI_KEY")
         else:
@@ -142,9 +162,19 @@ def main(argv=None):
                     fechas = x["salida"] + (f" → {x['regreso']}" if x["regreso"] else "")
                     lineas.append(f"| {x['ruta']} | {fechas} | **{x['precio']:.0f} {m}** | {rango} "
                                   f"| {x['aerolinea'] or ''} | [ver]({x['url']}) |")
-                Path("google_bajos.md").write_text("\n".join(lineas) + "\n", encoding="utf-8")
+                avisos_md.append("\n".join(lineas) + "\n")
+        texto = "".join(x for x in avisos_md if x)
+        if texto:
+            Path("google_bajos.md").write_text(texto, encoding="utf-8")
         for f in core.exportar(con, cfg, dias):
             print(f"Guardado {f.relative_to(cfg.carpeta_datos.parent)}")
+    elif a.orden == "viajes":
+        datos = viajes.resumen(cfg, con, {}, viajes.leer(cfg.carpeta_datos.parent / "docs" / "viajes.json"))
+        for v in datos["viajes"]:
+            print(f"\n{v['nombre']} (umbral {v['umbral']})")
+            _tabla([{**o, "fechas": f"{o['salida']}→{o['regreso'] or ''}"} for o in v["opciones"]],
+                   ["origen", "fechas", "precio_actual", "visto_el", "precio_hace_7_dias", "minimo_visto",
+                    "nivel_google"])
     elif a.orden == "historico":
         r = core.historico(con, a.origen, a.destino, a.mes)
         print(f"Ruta {r['ruta']} — evolución del mínimo por día de observación:")

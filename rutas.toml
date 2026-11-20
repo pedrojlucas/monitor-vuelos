@@ -29,6 +29,19 @@ reserva_busquedas = 10             # no gastar las últimas 10 búsquedas del pl
 # max_escalas = 1                  # descomenta para limitar escalas
 # Consumo: (3 + 1) fechas × 2 destinos = 8 búsquedas por consulta ≈ 80 al mes
 
+# --- Viajes concretos: fechas exactas, Google Flights cada día hasta que pasa la fecha ---
+# Resumen para la rutina semanal en docs/viajes.json. Consumo: orígenes × parejas de fechas al día.
+[[viajes]]
+nombre = "Portland marzo 2027"
+destino = "PDX"
+origenes = ["MAD"]
+fechas = [
+  ["2027-03-01", "2027-03-07"],   # semana 1: lunes → domingo
+  ["2027-03-08", "2027-03-14"],   # semana 2: lunes → domingo
+]
+max_escalas = 1                   # una escala (en Europa, idealmente)
+umbral = 700                      # aviso si baja de aquí (ida y vuelta, sin maleta)
+
 # Alertas: avisa cuando el mínimo encontrado baja de este precio (en la moneda indicada).
 # Clave "ORIGEN-DESTINO". "*-DESTINO" aplica a cualquier origen.
 # Ojo: los transatlánticos se miden en ida y vuelta (dias_estancia > 0).
