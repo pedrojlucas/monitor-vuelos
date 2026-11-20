@@ -1,0 +1,114 @@
+{
+ "generado": "2026-11-20",
+ "moneda": "EUR",
+ "nota": "Precios de Google Flights (vía SerpApi), ida y vuelta, 1 adulto, turista, SIN maleta facturada. 'evolucion' incluye el historial que da Google para esas mismas fechas.",
+ "viajes": [
+  {
+   "nombre": "Portland marzo 2027",
+   "destino": "PDX",
+   "umbral": 700.0,
+   "max_escalas": 1,
+   "mejor": {
+    "clave": "MAD-PDX 2027-03-01→2027-03-07",
+    "precio_actual": 811.0,
+    "nivel_google": "typical"
+   },
+   "opciones": [
+    {
+     "clave": "MAD-PDX 2027-03-01→2027-03-07",
+     "origen": "MAD",
+     "destino": "PDX",
+     "salida": "2027-03-01",
+     "regreso": "2027-03-07",
+     "precio_actual": 811.0,
+     "visto_el": "2026-11-20",
+     "precio_hace_7_dias": null,
+     "minimo_visto": 811.0,
+     "nivel_google": "typical",
+     "rango_tipico": [
+      660,
+      1350
+     ],
+     "mejores_opciones": [
+      {
+       "precio": 811.0,
+       "aerolinea": "United",
+       "escalas": 1,
+       "duracion_min": 1201,
+       "aeropuertos": "MAD-PDX"
+      },
+      {
+       "precio": 831.0,
+       "aerolinea": "American",
+       "escalas": 1,
+       "duracion_min": 1026,
+       "aeropuertos": "MAD-PDX"
+      },
+      {
+       "precio": 831.0,
+       "aerolinea": "American",
+       "escalas": 1,
+       "duracion_min": 1169,
+       "aeropuertos": "MAD-PDX"
+      }
+     ],
+     "url_google_flights": "https://www.google.com/travel/flights?hl=es&gl=es&curr=EUR&tfs=CBwQAhogEgoyMDI3LTAzLTAxKAFqBwgBEgNNQURyBwgBEgNQRFgaIBIKMjAyNy0wMy0wNygBagcIARIDUERYcgcIARIDTUFEQAFIAXABmAEB&tfu=EgIIAQ",
+     "evolucion": [
+      {
+       "fecha": "2026-11-20",
+       "precio": 811.0
+      }
+     ],
+     "terminado": false
+    },
+    {
+     "clave": "MAD-PDX 2027-03-08→2027-03-14",
+     "origen": "MAD",
+     "destino": "PDX",
+     "salida": "2027-03-08",
+     "regreso": "2027-03-14",
+     "precio_actual": 846.0,
+     "visto_el": "2026-11-20",
+     "precio_hace_7_dias": null,
+     "minimo_visto": 846.0,
+     "nivel_google": "typical",
+     "rango_tipico": [
+      660,
+      1350
+     ],
+     "mejores_opciones": [
+      {
+       "precio": 846.0,
+       "aerolinea": "KLM",
+       "escalas": 1,
+       "duracion_min": 855,
+       "aeropuertos": "MAD-PDX"
+      },
+      {
+       "precio": 856.0,
+       "aerolinea": "Delta",
+       "escalas": 1,
+       "duracion_min": 1267,
+       "aeropuertos": "MAD-PDX"
+      },
+      {
+       "precio": 856.0,
+       "aerolinea": "Delta",
+       "escalas": 1,
+       "duracion_min": 1146,
+       "aeropuertos": "MAD-PDX"
+      }
+     ],
+     "url_google_flights": "https://www.google.com/travel/flights?hl=es&gl=es&curr=EUR&tfs=CBwQAhogEgoyMDI3LTAzLTA4KAFqBwgBEgNNQURyBwgBEgNQRFgaIBIKMjAyNy0wMy0xNCgBagcIARIDUERYcgcIARIDTUFEQAFIAXABmAEB&tfu=EgIIAQ",
+     "evolucion": [
+      {
+       "fecha": "2026-11-20",
+       "precio": 846.0
+      }
+     ],
+     "terminado": false
+    }
+   ]
+  }
+ ]
+}
