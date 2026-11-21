@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-20",
+ "generado": "2026-11-21",
  "moneda": "EUR",
  "nota": "Precios de Google Flights (vía SerpApi), ida y vuelta, 1 adulto, turista, SIN maleta facturada. 'evolucion' incluye el historial que da Google para esas mismas fechas.",
  "viajes": [
@@ -21,7 +21,7 @@
      "salida": "2027-03-01",
      "regreso": "2027-03-07",
      "precio_actual": 811.0,
-     "visto_el": "2026-11-20",
+     "visto_el": "2026-11-21",
      "precio_hace_7_dias": null,
      "minimo_visto": 811.0,
      "nivel_google": "typical",
@@ -57,6 +57,10 @@
       {
        "fecha": "2026-11-20",
        "precio": 811.0
+      },
+      {
+       "fecha": "2026-11-21",
+       "precio": 811.0
       }
      ],
      "terminado": false
@@ -68,7 +72,7 @@
      "salida": "2027-03-08",
      "regreso": "2027-03-14",
      "precio_actual": 846.0,
-     "visto_el": "2026-11-20",
+     "visto_el": "2026-11-21",
      "precio_hace_7_dias": null,
      "minimo_visto": 846.0,
      "nivel_google": "typical",
@@ -79,23 +83,23 @@
      "mejores_opciones": [
       {
        "precio": 846.0,
-       "aerolinea": "KLM",
+       "aerolinea": "United",
        "escalas": 1,
-       "duracion_min": 855,
+       "duracion_min": 1107,
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 856.0,
-       "aerolinea": "Delta",
+       "precio": 846.0,
+       "aerolinea": "United",
        "escalas": 1,
-       "duracion_min": 1267,
+       "duracion_min": 1192,
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 856.0,
-       "aerolinea": "Delta",
+       "precio": 860.0,
+       "aerolinea": "American",
        "escalas": 1,
-       "duracion_min": 1146,
+       "duracion_min": 1006,
        "aeropuertos": "MAD-PDX"
       }
      ],
@@ -103,6 +107,10 @@
      "evolucion": [
       {
        "fecha": "2026-11-20",
+       "precio": 846.0
+      },
+      {
+       "fecha": "2026-11-21",
        "precio": 846.0
       }
      ],
