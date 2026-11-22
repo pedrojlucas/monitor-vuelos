@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-21",
+ "generado": "2026-11-22",
  "moneda": "EUR",
  "nota": "Precios de Google Flights (vía SerpApi), ida y vuelta, 1 adulto, turista, SIN maleta facturada. 'evolucion' incluye el historial que da Google para esas mismas fechas.",
  "viajes": [
@@ -21,7 +21,7 @@
      "salida": "2027-03-01",
      "regreso": "2027-03-07",
      "precio_actual": 811.0,
-     "visto_el": "2026-11-21",
+     "visto_el": "2026-11-22",
      "precio_hace_7_dias": null,
      "minimo_visto": 811.0,
      "nivel_google": "typical",
@@ -38,17 +38,17 @@
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 831.0,
-       "aerolinea": "American",
+       "precio": 827.0,
+       "aerolinea": "KLM",
        "escalas": 1,
-       "duracion_min": 1026,
+       "duracion_min": 855,
        "aeropuertos": "MAD-PDX"
       },
       {
        "precio": 831.0,
-       "aerolinea": "American",
+       "aerolinea": "Delta",
        "escalas": 1,
-       "duracion_min": 1169,
+       "duracion_min": 1128,
        "aeropuertos": "MAD-PDX"
       }
      ],
@@ -61,6 +61,10 @@
       {
        "fecha": "2026-11-21",
        "precio": 811.0
+      },
+      {
+       "fecha": "2026-11-22",
+       "precio": 811.0
       }
      ],
      "terminado": false
@@ -72,7 +76,7 @@
      "salida": "2027-03-08",
      "regreso": "2027-03-14",
      "precio_actual": 846.0,
-     "visto_el": "2026-11-21",
+     "visto_el": "2026-11-22",
      "precio_hace_7_dias": null,
      "minimo_visto": 846.0,
      "nivel_google": "typical",
@@ -96,10 +100,10 @@
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 860.0,
-       "aerolinea": "American",
+       "precio": 848.0,
+       "aerolinea": "KLM",
        "escalas": 1,
-       "duracion_min": 1006,
+       "duracion_min": 855,
        "aeropuertos": "MAD-PDX"
       }
      ],
@@ -111,6 +115,10 @@
       },
       {
        "fecha": "2026-11-21",
+       "precio": 846.0
+      },
+      {
+       "fecha": "2026-11-22",
        "precio": 846.0
       }
      ],
