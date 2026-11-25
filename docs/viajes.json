@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-24",
+ "generado": "2026-11-25",
  "moneda": "EUR",
  "nota": "Precios de Google Flights (vía SerpApi), ida y vuelta, 1 adulto, turista, SIN maleta facturada. 'evolucion' incluye el historial que da Google para esas mismas fechas.",
  "viajes": [
@@ -10,7 +10,7 @@
    "max_escalas": 1,
    "mejor": {
     "clave": "MAD-PDX 2027-03-01→2027-03-07",
-    "precio_actual": 811.0,
+    "precio_actual": 729.0,
     "nivel_google": "typical"
    },
    "opciones": [
@@ -20,10 +20,10 @@
      "destino": "PDX",
      "salida": "2027-03-01",
      "regreso": "2027-03-07",
-     "precio_actual": 811.0,
-     "visto_el": "2026-11-24",
+     "precio_actual": 729.0,
+     "visto_el": "2026-11-25",
      "precio_hace_7_dias": null,
-     "minimo_visto": 811.0,
+     "minimo_visto": 729.0,
      "nivel_google": "typical",
      "rango_tipico": [
       660,
@@ -31,24 +31,24 @@
      ],
      "mejores_opciones": [
       {
-       "precio": 811.0,
-       "aerolinea": "United",
-       "escalas": 1,
-       "duracion_min": 1201,
-       "aeropuertos": "MAD-PDX"
-      },
-      {
-       "precio": 831.0,
+       "precio": 729.0,
        "aerolinea": "American",
        "escalas": 1,
        "duracion_min": 1026,
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 831.0,
-       "aerolinea": "American",
+       "precio": 734.0,
+       "aerolinea": "British Airways",
        "escalas": 1,
-       "duracion_min": 1169,
+       "duracion_min": 850,
+       "aeropuertos": "MAD-PDX"
+      },
+      {
+       "precio": 811.0,
+       "aerolinea": "United",
+       "escalas": 1,
+       "duracion_min": 1201,
        "aeropuertos": "MAD-PDX"
       }
      ],
@@ -73,6 +73,10 @@
       {
        "fecha": "2026-11-24",
        "precio": 811.0
+      },
+      {
+       "fecha": "2026-11-25",
+       "precio": 729.0
       }
      ],
      "terminado": false
@@ -83,10 +87,10 @@
      "destino": "PDX",
      "salida": "2027-03-08",
      "regreso": "2027-03-14",
-     "precio_actual": 846.0,
-     "visto_el": "2026-11-24",
+     "precio_actual": 754.0,
+     "visto_el": "2026-11-25",
      "precio_hace_7_dias": null,
-     "minimo_visto": 846.0,
+     "minimo_visto": 754.0,
      "nivel_google": "typical",
      "rango_tipico": [
       660,
@@ -94,24 +98,24 @@
      ],
      "mejores_opciones": [
       {
-       "precio": 846.0,
-       "aerolinea": "United",
+       "precio": 754.0,
+       "aerolinea": "American",
        "escalas": 1,
-       "duracion_min": 1107,
+       "duracion_min": 1049,
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 846.0,
-       "aerolinea": "KLM",
+       "precio": 754.0,
+       "aerolinea": "American",
        "escalas": 1,
-       "duracion_min": 855,
+       "duracion_min": 1026,
        "aeropuertos": "MAD-PDX"
       },
       {
-       "precio": 846.0,
-       "aerolinea": "United",
+       "precio": 754.0,
+       "aerolinea": "American",
        "escalas": 1,
-       "duracion_min": 1192,
+       "duracion_min": 1169,
        "aeropuertos": "MAD-PDX"
       }
      ],
@@ -136,6 +140,10 @@
       {
        "fecha": "2026-11-24",
        "precio": 846.0
+      },
+      {
+       "fecha": "2026-11-25",
+       "precio": 754.0
       }
      ],
      "terminado": false
