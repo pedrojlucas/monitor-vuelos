@@ -33,27 +33,48 @@ jobs:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python -m vuelos recoger
 
+      # A partir de aquí, cada paso se ejecuta aunque falle el anterior: lo recogido
+      # (y las búsquedas de SerpApi ya gastadas) se guarda siempre.
       - name: Generar informe
+        if: ${{ !cancelled() }}
         run: python -m vuelos informe --salida docs/index.html
 
-      - name: Abrir issue si hay alertas nuevas
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python -m vuelos alertas --nuevas --markdown > alertas.md
-          if [ -f google_bajos.md ]; then cat google_bajos.md >> alertas.md; fi
-          if [ -s alertas.md ]; then
-            gh issue create --title "✈️ Alerta de precio $(date -u +%F)" --body-file alertas.md
-          fi
-
       - name: Guardar histórico en el repositorio
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
           git add datos docs
           if git diff --cached --quiet; then
             echo "Sin cambios"
-          else
-            git commit -m "Precios $(date -u +%F)"
-            git push
+            exit 0
           fi
+          git commit -m "Precios $(date -u +%F)"
+          for intento in 1 2 3 4; do
+            git push && exit 0
+            echo "push falló (intento $intento); reintentando"
+            sleep $((intento * 15))
+            git pull --rebase
+          done
+          exit 1
+
+      # Las alertas van al final: un fallo de la API de GitHub ya no impide guardar los datos.
+      - name: Abrir issue si hay alertas nuevas
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m vuelos alertas --nuevas --markdown > alertas.md
+          if [ -f google_bajos.md ]; then cat google_bajos.md >> alertas.md; fi
+          if [ ! -s alertas.md ]; then
+            echo "Sin alertas"
+            exit 0
+          fi
+          for intento in 1 2 3 4; do
+            gh issue create --title "✈️ Alerta de precio $(date -u +%F)" --body-file alertas.md && exit 0
+            echo "gh issue create falló (intento $intento); reintentando"
+            sleep $((intento * 20))
+          done
+          echo "::error::No se pudo abrir la issue de alertas tras 4 intentos (los datos sí se guardaron)"
+          cat alertas.md >> "$GITHUB_STEP_SUMMARY"
+          exit 1
