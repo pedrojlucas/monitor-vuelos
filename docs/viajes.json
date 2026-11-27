@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-26",
+ "generado": "2026-11-27",
  "moneda": "EUR",
  "nota": "Precios de Google Flights (vía SerpApi), ida y vuelta, 1 adulto, turista, SIN maleta facturada. 'evolucion' incluye el historial que da Google para esas mismas fechas.",
  "viajes": [
@@ -21,8 +21,8 @@
      "salida": "2027-03-01",
      "regreso": "2027-03-07",
      "precio_actual": 729.0,
-     "visto_el": "2026-11-26",
-     "precio_hace_7_dias": null,
+     "visto_el": "2026-11-27",
+     "precio_hace_7_dias": 811.0,
      "minimo_visto": 729.0,
      "nivel_google": "typical",
      "rango_tipico": [
@@ -81,6 +81,10 @@
       {
        "fecha": "2026-11-26",
        "precio": 729.0
+      },
+      {
+       "fecha": "2026-11-27",
+       "precio": 729.0
       }
      ],
      "terminado": false
@@ -92,8 +96,8 @@
      "salida": "2027-03-08",
      "regreso": "2027-03-14",
      "precio_actual": 754.0,
-     "visto_el": "2026-11-26",
-     "precio_hace_7_dias": null,
+     "visto_el": "2026-11-27",
+     "precio_hace_7_dias": 846.0,
      "minimo_visto": 754.0,
      "nivel_google": "typical",
      "rango_tipico": [
@@ -151,6 +155,10 @@
       },
       {
        "fecha": "2026-11-26",
+       "precio": 754.0
+      },
+      {
+       "fecha": "2026-11-27",
        "precio": 754.0
       }
      ],
